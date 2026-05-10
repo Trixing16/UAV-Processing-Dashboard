@@ -527,40 +527,59 @@
     document.getElementById('db-name').textContent = file.name;
     showLoading();
 
-    // Defer FileReader so loading screen renders first
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const reader = new FileReader();
       reader.onload = e => {
         setLoading('Opening database...', 25);
         requestAnimationFrame(() => {
-          const uInt8 = new Uint8Array(e.target.result);
-          db = new SQL.Database(uInt8);
-          setLoading('Filtering records (2020 - present)...', 50);
-          requestAnimationFrame(() => {
-            allRows = queryAll();
-            setLoading(`Loaded ${allRows.length} records — building charts...`, 75);
+          try {
+            const uInt8 = new Uint8Array(e.target.result);
+            db = new SQL.Database(uInt8);
+            setLoading('Filtering records (2020 - present)...', 50);
             requestAnimationFrame(() => {
-              populateFilters();
-              setLoading('Rendering dashboard...', 90);
+              allRows = queryAll();
+              setLoading(`Loaded ${allRows.length} records — building charts...`, 75);
               requestAnimationFrame(() => {
-                renderDashboard(getFilteredRows());
-                setLoading('Done', 100);
-                setTimeout(() => {
-                  document.getElementById('loadingScreen').classList.remove('active');
-                  document.getElementById('dashboard').style.display = 'block';
-                }, 400);
+                populateFilters();
+                setLoading('Rendering dashboard...', 90);
+                // Show dashboard first, THEN render charts so browser can paint
+                document.getElementById('loadingScreen').classList.remove('active');
+                document.getElementById('dashboard').style.display = 'block';
+                requestAnimationFrame(() => {
+                  try {
+                    renderDashboard(getFilteredRows());
+                  } catch(err) {
+                    console.error('Render error:', err);
+                  }
+                });
               });
             });
-          });
+          } catch(err) {
+            console.error('DB load error:', err);
+            document.getElementById('loadingScreen').classList.remove('active');
+            dropzone.style.display = 'flex';
+            alert('Error loading database: ' + err.message);
+          }
         });
+      };
+      reader.onerror = () => {
+        document.getElementById('loadingScreen').classList.remove('active');
+        dropzone.style.display = 'flex';
+        alert('Failed to read file.');
       };
       reader.readAsArrayBuffer(file);
     }));
   }
 
   function queryAll() {
+    // DEBUG - log raw flight_time values to console
+    const debugRes = db.exec(`SELECT id, flight_time FROM uav LIMIT 10`);
+    if (debugRes.length) {
+      console.log('RAW flight_time samples:');
+      debugRes[0].values.forEach(r => console.log(r[0], '|', r[1], '| type:', typeof r[1]));
+    }
+
     // Fetch everything for the 4 sites, filter dates purely in JS
-    // because flight_time format in DB may vary
     const res = db.exec(`SELECT * FROM uav WHERE site IN ('CVM','SRM','GRM','PDM') ORDER BY flight_time DESC`);
     if (!res.length) return [];
     const cols = res[0].columns;
@@ -570,7 +589,6 @@
       .map(row => Object.fromEntries(cols.map((c,i) => [c, row[i]])))
       .filter(r => {
         if (!r.flight_time) return false;
-        // Try multiple date parse strategies
         let d = new Date(r.flight_time);
         if (isNaN(d)) d = new Date(r.flight_time.replace(' ', 'T'));
         if (isNaN(d)) return false;
