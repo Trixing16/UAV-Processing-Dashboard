@@ -515,63 +515,67 @@
   });
   fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
 
-  function setLoading(status, pct) {
-    document.getElementById('loadingStatus').textContent = status;
-    document.getElementById('loadingBar').style.width = pct + '%';
+  function showLoading() {
+    dropzone.style.display = 'none';
+    document.getElementById('loadingScreen').classList.add('active');
+    setLoading('Reading file...', 10);
   }
 
   function loadFile(file) {
     if (!file) return;
     if (!SQL) { alert('SQL engine still loading, try again in a second.'); return; }
     document.getElementById('db-name').textContent = file.name;
+    showLoading();
 
-    // Show loading screen
-    dropzone.style.display = 'none';
-    document.getElementById('loadingScreen').classList.add('active');
-    setLoading('Reading file...', 10);
-
-    const reader = new FileReader();
-    reader.onload = e => {
-      setTimeout(() => {
+    // Defer FileReader so loading screen renders first
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const reader = new FileReader();
+      reader.onload = e => {
         setLoading('Opening database...', 25);
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           const uInt8 = new Uint8Array(e.target.result);
           db = new SQL.Database(uInt8);
           setLoading('Filtering records (2020 - present)...', 50);
-          setTimeout(() => {
+          requestAnimationFrame(() => {
             allRows = queryAll();
             setLoading(`Loaded ${allRows.length} records — building charts...`, 75);
-            setTimeout(() => {
+            requestAnimationFrame(() => {
               populateFilters();
               setLoading('Rendering dashboard...', 90);
-              setTimeout(() => {
+              requestAnimationFrame(() => {
                 renderDashboard(getFilteredRows());
                 setLoading('Done', 100);
                 setTimeout(() => {
                   document.getElementById('loadingScreen').classList.remove('active');
                   document.getElementById('dashboard').style.display = 'block';
-                }, 300);
-              }, 50);
-            }, 50);
-          }, 50);
-        }, 50);
-      }, 50);
-    };
-    reader.readAsArrayBuffer(file);
+                }, 400);
+              });
+            });
+          });
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    }));
   }
 
   function queryAll() {
-    const today = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    const res = db.exec(`SELECT * FROM uav WHERE site IN ('CVM','SRM','GRM','PDM') AND flight_time >= '2020-01-01 00:00:00' AND flight_time <= '${today}' ORDER BY flight_time DESC`);
+    // Fetch everything for the 4 sites, filter dates purely in JS
+    // because flight_time format in DB may vary
+    const res = db.exec(`SELECT * FROM uav WHERE site IN ('CVM','SRM','GRM','PDM') ORDER BY flight_time DESC`);
     if (!res.length) return [];
     const cols = res[0].columns;
-    const rows = res[0].values.map(row => Object.fromEntries(cols.map((c,i) => [c, row[i]])));
-    // Belt-and-braces JS filter in case flight_time format varies
-    return rows.filter(r => {
-      if (!r.flight_time) return false;
-      const d = new Date(r.flight_time.replace(' ', 'T'));
-      return d >= new Date('2020-01-01') && d <= new Date();
-    });
+    const cutStart = new Date('2020-01-01T00:00:00');
+    const cutEnd   = new Date();
+    return res[0].values
+      .map(row => Object.fromEntries(cols.map((c,i) => [c, row[i]])))
+      .filter(r => {
+        if (!r.flight_time) return false;
+        // Try multiple date parse strategies
+        let d = new Date(r.flight_time);
+        if (isNaN(d)) d = new Date(r.flight_time.replace(' ', 'T'));
+        if (isNaN(d)) return false;
+        return d >= cutStart && d <= cutEnd;
+      });
   }
 
   // ── SITE TOGGLES ──
