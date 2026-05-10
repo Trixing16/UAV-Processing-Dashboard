@@ -268,6 +268,31 @@
   .dz-pos { color: var(--pass); font-weight: 600; }
   .dz-neg { color: var(--fail); font-weight: 600; }
 
+  /* ── SITE TOGGLES ── */
+  .site-toggles { display: flex; gap: 8px; align-items: center; }
+  .site-toggle {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    transition: all 0.15s;
+    opacity: 0.35;
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .site-toggle.active { opacity: 1; color: #fff; }
+  .site-toggle[data-site="CVM"]         { border-color: #e8590c; }
+  .site-toggle[data-site="CVM"].active  { background: #e8590c; }
+  .site-toggle[data-site="SRM"]         { border-color: #1a1a1a; }
+  .site-toggle[data-site="SRM"].active  { background: #1a1a1a; }
+  .site-toggle[data-site="GRM"]         { border-color: #c44a08; }
+  .site-toggle[data-site="GRM"].active  { background: #c44a08; }
+  .site-toggle[data-site="PDM"]         { border-color: #f4a261; color: #8a4a00; }
+  .site-toggle[data-site="PDM"].active  { background: #f4a261; color: #fff; }
+
   /* ── LOAD NEW ── */
   .load-new {
     display: flex;
@@ -308,8 +333,13 @@
   <!-- FILTERS -->
   <div class="filters">
     <div class="filter-group">
-      <label>Site</label>
-      <select id="filterSite"><option value="">All Sites</option></select>
+      <label>Sites</label>
+      <div class="site-toggles">
+        <button class="site-toggle active" data-site="CVM" onclick="toggleSite(this)">CVM</button>
+        <button class="site-toggle active" data-site="SRM" onclick="toggleSite(this)">SRM</button>
+        <button class="site-toggle active" data-site="GRM" onclick="toggleSite(this)">GRM</button>
+        <button class="site-toggle active" data-site="PDM" onclick="toggleSite(this)">PDM</button>
+      </div>
     </div>
     <div class="filter-group">
       <label>UAV</label>
@@ -404,7 +434,14 @@
 
 <script>
   let SQL, db, allRows = [], charts = {};
-  const now = new Date();
+
+  const SITES = ['CVM', 'SRM', 'GRM', 'PDM'];
+  const SITE_COLORS = {
+    CVM: { border: '#e8590c', bg: 'rgba(232,89,12,0.12)' },
+    SRM: { border: '#1a1a1a', bg: 'rgba(26,26,26,0.10)' },
+    GRM: { border: '#c44a08', bg: 'rgba(196,74,8,0.12)' },
+    PDM: { border: '#f4a261', bg: 'rgba(244,162,97,0.15)' },
+  };
 
   // ── INIT SQL.js ──
   initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}` })
@@ -434,7 +471,7 @@
       db = new SQL.Database(uInt8);
       allRows = queryAll();
       populateFilters();
-      renderDashboard(allRows);
+      renderDashboard(getFilteredRows());
       dropzone.style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
     };
@@ -442,16 +479,41 @@
   }
 
   function queryAll() {
-    const res = db.exec(`SELECT * FROM uav WHERE flight_time <= datetime('now') ORDER BY flight_time DESC`);
+    const res = db.exec(`SELECT * FROM uav WHERE site IN ('CVM','SRM','GRM','PDM') AND flight_time <= datetime('now') ORDER BY flight_time DESC`);
     if (!res.length) return [];
     const cols = res[0].columns;
     return res[0].values.map(row => Object.fromEntries(cols.map((c,i) => [c, row[i]])));
   }
 
+  // ── SITE TOGGLES ──
+  function toggleSite(btn) {
+    btn.classList.toggle('active');
+    renderDashboard(getFilteredRows());
+  }
+
+  function getActiveSites() {
+    return [...document.querySelectorAll('.site-toggle.active')].map(b => b.dataset.site);
+  }
+
+  function getFilteredRows() {
+    const sites  = getActiveSites();
+    const uav    = document.getElementById('filterUav').value;
+    const target = document.getElementById('filterTarget').value;
+    const from   = document.getElementById('filterFrom').value;
+    const to     = document.getElementById('filterTo').value;
+    return allRows.filter(r => {
+      const d = r.flight_time?.slice(0,10) || '';
+      return sites.includes(r.site)
+          && (!uav    || r.uav === uav)
+          && (!target || r.target === target)
+          && (!from   || d >= from)
+          && (!to     || d <= to);
+    });
+  }
+
   // ── FILTERS ──
   function populateFilters() {
-    populate('filterSite', [...new Set(allRows.map(r => r.site))].sort());
-    populate('filterUav',  [...new Set(allRows.map(r => r.uav))].sort());
+    populate('filterUav',    [...new Set(allRows.map(r => r.uav))].sort());
     populate('filterTarget', [...new Set(allRows.map(r => r.target))].sort());
     const dates = allRows.map(r => r.flight_time?.slice(0,10)).filter(Boolean).sort();
     if (dates.length) {
@@ -466,28 +528,13 @@
     sel.innerHTML = first + vals.map(v => `<option value="${v}">${v}</option>`).join('');
   }
 
-  function applyFilters() {
-    const site   = document.getElementById('filterSite').value;
-    const uav    = document.getElementById('filterUav').value;
-    const target = document.getElementById('filterTarget').value;
-    const from   = document.getElementById('filterFrom').value;
-    const to     = document.getElementById('filterTo').value;
-
-    const filtered = allRows.filter(r => {
-      const d = r.flight_time?.slice(0,10) || '';
-      return (!site   || r.site === site)
-          && (!uav    || r.uav === uav)
-          && (!target || r.target === target)
-          && (!from   || d >= from)
-          && (!to     || d <= to);
-    });
-    renderDashboard(filtered);
-  }
+  function applyFilters() { renderDashboard(getFilteredRows()); }
 
   function clearFilters() {
-    ['filterSite','filterUav','filterTarget'].forEach(id => document.getElementById(id).value = '');
+    document.querySelectorAll('.site-toggle').forEach(b => b.classList.add('active'));
+    ['filterUav','filterTarget'].forEach(id => document.getElementById(id).value = '');
     populateFilters();
-    renderDashboard(allRows);
+    renderDashboard(getFilteredRows());
   }
 
   function resetDashboard() {
@@ -503,7 +550,7 @@
   // ── RENDER ──
   function renderDashboard(rows) {
     updateStats(rows);
-    renderHistogram(rows);
+    renderHistogram();   // always uses allRows split by active sites for overlay
     renderSiteChart(rows);
     renderTimeChart(rows);
     renderXYChart(rows);
@@ -521,11 +568,10 @@
   function fmt(v, d=3) { return v == null ? '—' : (+v).toFixed(d); }
 
   function updateStats(rows) {
-    const dzs = rows.map(r => +r.d_z).filter(v => !isNaN(v));
-    const hs  = rows.map(r => +r.height).filter(v => !isNaN(v));
-    const pts = rows.map(r => +r.pts).filter(v => !isNaN(v));
+    const dzs  = rows.map(r => +r.d_z).filter(v => !isNaN(v));
+    const hs   = rows.map(r => +r.height).filter(v => !isNaN(v));
+    const pts  = rows.map(r => +r.pts).filter(v => !isNaN(v));
     const fails = dzs.filter(v => Math.abs(v) > 0.1).length;
-
     document.getElementById('statFlights').textContent = rows.length;
     document.getElementById('statMedianDz').textContent = fmt(median(dzs));
     document.getElementById('statHeight').textContent = fmt(mean(hs), 1);
@@ -533,39 +579,62 @@
     document.getElementById('statFails').textContent = fails;
   }
 
-  // dZ HISTOGRAM
-  function renderHistogram(rows) {
-    const dzs = rows.map(r => +r.d_z).filter(v => !isNaN(v));
+  // ── dZ HISTOGRAM — overlaid line per active site ──
+  function renderHistogram() {
+    const activeSites = getActiveSites();
+    const uav    = document.getElementById('filterUav').value;
+    const target = document.getElementById('filterTarget').value;
+    const from   = document.getElementById('filterFrom').value;
+    const to     = document.getElementById('filterTo').value;
+
     const binSize = 0.01;
     const minBin = -0.3, maxBin = 0.3;
     const bins = [];
     for (let b = minBin; b < maxBin; b = +(b + binSize).toFixed(3)) bins.push(b);
+    const labels = bins.map(b => b.toFixed(2));
 
-    const counts = new Array(bins.length).fill(0);
-    dzs.forEach(v => {
-      const i = Math.floor((v - minBin) / binSize);
-      if (i >= 0 && i < counts.length) counts[i]++;
+    const datasets = activeSites.map(site => {
+      const siteRows = allRows.filter(r => {
+        const d = r.flight_time?.slice(0,10) || '';
+        return r.site === site
+            && (!uav    || r.uav === uav)
+            && (!target || r.target === target)
+            && (!from   || d >= from)
+            && (!to     || d <= to);
+      });
+      const dzs = siteRows.map(r => +r.d_z).filter(v => !isNaN(v));
+      const counts = new Array(bins.length).fill(0);
+      dzs.forEach(v => {
+        const i = Math.floor((v - minBin) / binSize);
+        if (i >= 0 && i < counts.length) counts[i]++;
+      });
+      const c = SITE_COLORS[site];
+      return {
+        label: site,
+        data: counts,
+        borderColor: c.border,
+        backgroundColor: c.bg,
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: true,
+        tension: 0.4,
+      };
     });
 
-    const colors = bins.map(b => Math.abs(b) > 0.1 ? 'rgba(220,38,38,0.75)' : 'rgba(232,89,12,0.75)');
-
-    makeChart('histChart', 'bar', {
-      labels: bins.map(b => b.toFixed(2)),
-      datasets: [{
-        label: 'Flights',
-        data: counts,
-        backgroundColor: colors,
-        borderWidth: 0,
-        borderRadius: 2,
-      }]
-    }, {
-      plugins: { legend: { display: false }, tooltip: { callbacks: {
-        title: ctx => `dZ: ${ctx[0].label}m`,
-        label: ctx => `${ctx.raw} flights`
-      }}},
+    makeChart('histChart', 'line', { labels, datasets }, {
+      plugins: {
+        legend: { display: true, position: 'top', labels: { color: '#1a1a1a', font: { size: 11, family: 'DM Mono' } } },
+        tooltip: { callbacks: {
+          title: ctx => `dZ: ${ctx[0].label}m`,
+          label: ctx => `${ctx.dataset.label}: ${ctx.raw} flights`
+        }},
+        annotation: { annotations: {
+          linePos: { type: 'line', x: '0.00', borderColor: 'rgba(0,0,0,0.2)', borderWidth: 1, borderDash: [4,4] }
+        }}
+      },
       scales: {
-        x: { title: { display: true, text: 'dZ (m)', color: '#64748b' }, ticks: { maxTicksLimit: 12 } },
-        y: { title: { display: true, text: 'Count', color: '#64748b' } }
+        x: { title: { display: true, text: 'dZ (m)', color: '#8a7060' }, ticks: { maxTicksLimit: 12 } },
+        y: { title: { display: true, text: 'Count', color: '#8a7060' }, beginAtZero: true }
       }
     });
   }
@@ -573,57 +642,64 @@
   // SITE DOUGHNUT
   function renderSiteChart(rows) {
     const siteCounts = {};
-    rows.forEach(r => { siteCounts[r.site] = (siteCounts[r.site]||0) + 1; });
-    const labels = Object.keys(siteCounts);
-    const palette = ['#e8590c','#1a1a1a','#f4a261','#6b3a2a','#f97316','#c44a08'];
-
+    SITES.forEach(s => siteCounts[s] = 0);
+    rows.forEach(r => { if (siteCounts[r.site] !== undefined) siteCounts[r.site]++; });
+    const labels = SITES;
+    const palette = SITES.map(s => SITE_COLORS[s].border);
     makeChart('siteChart', 'doughnut', {
       labels,
       datasets: [{ data: labels.map(l => siteCounts[l]), backgroundColor: palette, borderWidth: 0 }]
     }, {
-      plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } } },
+      plugins: { legend: { position: 'bottom', labels: { color: '#8a7060', font: { size: 11 } } } },
       cutout: '60%'
     });
   }
 
-  // dZ OVER TIME
+  // dZ OVER TIME — one line per active site
   function renderTimeChart(rows) {
-    const sorted = [...rows].filter(r => r.flight_time).sort((a,b) => a.flight_time.localeCompare(b.flight_time));
-    makeChart('timeChart', 'line', {
-      labels: sorted.map(r => r.flight_time?.slice(0,10)),
-      datasets: [{
-        label: 'dZ',
-        data: sorted.map(r => +r.d_z),
-        borderColor: '#e8590c',
-        backgroundColor: 'rgba(232,89,12,0.08)',
+    const activeSites = getActiveSites();
+    const datasets = activeSites.map(site => {
+      const siteRows = [...rows].filter(r => r.site === site && r.flight_time)
+        .sort((a,b) => a.flight_time.localeCompare(b.flight_time));
+      const c = SITE_COLORS[site];
+      return {
+        label: site,
+        data: siteRows.map(r => ({ x: r.flight_time.slice(0,10), y: +r.d_z })),
+        borderColor: c.border,
+        backgroundColor: c.bg,
         borderWidth: 1.5,
         pointRadius: 2,
-        fill: true,
+        fill: false,
         tension: 0.3,
-      }]
-    }, {
-      plugins: { legend: { display: false } },
+      };
+    });
+    makeChart('timeChart', 'line', { datasets }, {
+      plugins: { legend: { display: true, position: 'top', labels: { color: '#1a1a1a', font: { size: 10, family: 'DM Mono' } } } },
       scales: {
-        x: { ticks: { maxTicksLimit: 6 } },
-        y: { title: { display: true, text: 'dZ (m)', color: '#64748b' } }
+        x: { type: 'category', ticks: { maxTicksLimit: 6 } },
+        y: { title: { display: true, text: 'dZ (m)', color: '#8a7060' } }
       }
     });
   }
 
-  // dX/dY SCATTER
+  // dX/dY SCATTER — coloured by site
   function renderXYChart(rows) {
-    makeChart('xyChart', 'scatter', {
-      datasets: [{
-        label: 'dX/dY',
-        data: rows.map(r => ({ x: +r.d_x, y: +r.d_y })),
-        backgroundColor: 'rgba(232,89,12,0.55)',
+    const activeSites = getActiveSites();
+    const datasets = activeSites.map(site => {
+      const siteRows = rows.filter(r => r.site === site);
+      const c = SITE_COLORS[site];
+      return {
+        label: site,
+        data: siteRows.map(r => ({ x: +r.d_x, y: +r.d_y })),
+        backgroundColor: c.border + 'aa',
         pointRadius: 4,
-      }]
-    }, {
-      plugins: { legend: { display: false } },
+      };
+    });
+    makeChart('xyChart', 'scatter', { datasets }, {
+      plugins: { legend: { display: true, position: 'top', labels: { color: '#1a1a1a', font: { size: 10, family: 'DM Mono' } } } },
       scales: {
-        x: { title: { display: true, text: 'dX (m)', color: '#64748b' } },
-        y: { title: { display: true, text: 'dY (m)', color: '#64748b' } }
+        x: { title: { display: true, text: 'dX (m)', color: '#8a7060' } },
+        y: { title: { display: true, text: 'dY (m)', color: '#8a7060' } }
       }
     });
   }
@@ -636,7 +712,7 @@
       datasets: [{
         label: 'Points',
         data: sorted.map(r => +r.pts),
-        backgroundColor: 'rgba(22,163,74,0.7)',
+        backgroundColor: sorted.map(r => SITE_COLORS[r.site]?.border + 'bb' || '#e8590cbb'),
         borderWidth: 0,
         borderRadius: 2,
       }]
@@ -644,7 +720,7 @@
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { maxTicksLimit: 6 } },
-        y: { title: { display: true, text: 'Points', color: '#64748b' } }
+        y: { title: { display: true, text: 'Points', color: '#8a7060' } }
       }
     });
   }
@@ -659,7 +735,7 @@
       const targetBadge = r.target === 'MTD' ? 'badge-mtd' : 'badge-gt';
       return `<tr>
         <td>${r.id}</td>
-        <td>${r.site}</td>
+        <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SITE_COLORS[r.site]?.border||'#ccc'};margin-right:6px;vertical-align:middle;"></span>${r.site}</td>
         <td>${r.psx}</td>
         <td>${r.uav}</td>
         <td><span class="badge ${targetBadge}">${r.target}</span></td>
@@ -677,7 +753,7 @@
   const chartDefaults = {
     responsive: true,
     maintainAspectRatio: true,
-    plugins: { legend: { labels: { color: '#64748b', font: { size: 11 } } } },
+    plugins: { legend: { labels: { color: '#8a7060', font: { size: 11 } } } },
     scales: {
       x: { grid: { color: '#f5ede6' }, ticks: { color: '#8a7060', font: { size: 10, family: 'DM Mono' } } },
       y: { grid: { color: '#f5ede6' }, ticks: { color: '#8a7060', font: { size: 10, family: 'DM Mono' } } }
