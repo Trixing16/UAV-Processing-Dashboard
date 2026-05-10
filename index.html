@@ -561,10 +561,17 @@
   }
 
   function queryAll() {
-    const res = db.exec(`SELECT * FROM uav WHERE site IN ('CVM','SRM','GRM','PDM') AND flight_time >= '2020-01-01' AND flight_time <= datetime('now') ORDER BY flight_time DESC`);
+    const today = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const res = db.exec(`SELECT * FROM uav WHERE site IN ('CVM','SRM','GRM','PDM') AND flight_time >= '2020-01-01 00:00:00' AND flight_time <= '${today}' ORDER BY flight_time DESC`);
     if (!res.length) return [];
     const cols = res[0].columns;
-    return res[0].values.map(row => Object.fromEntries(cols.map((c,i) => [c, row[i]])));
+    const rows = res[0].values.map(row => Object.fromEntries(cols.map((c,i) => [c, row[i]])));
+    // Belt-and-braces JS filter in case flight_time format varies
+    return rows.filter(r => {
+      if (!r.flight_time) return false;
+      const d = new Date(r.flight_time.replace(' ', 'T'));
+      return d >= new Date('2020-01-01') && d <= new Date();
+    });
   }
 
   // ── SITE TOGGLES ──
