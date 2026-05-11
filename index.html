@@ -424,18 +424,20 @@
     });
   }
 
+  function dzClass(v) { return Math.abs(+v) > 0.120 ? 'dz-neg' : 'dz-pos'; }
+
   function renderTable(rows) {
     document.getElementById('tableCount').textContent = `${rows.length} records`;
     document.getElementById('tableBody').innerHTML = rows.slice(0,500).map(r => {
-      const dz=+r.d_z;
       return `<tr>
         <td>${r.id}</td>
         <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SC[r.site]?.border||'#ccc'};margin-right:6px;vertical-align:middle;"></span>${r.site}</td>
         <td>${r.psx}</td><td>${r.uav}</td>
         <td><span class="badge ${r.target==='MTD'?'badge-mtd':'badge-gt'}">${r.target}</span></td>
         <td>${r.flight_time}</td><td>${fmt(r.height,1)}</td>
-        <td>${fmt(r.d_x)}</td><td>${fmt(r.d_y)}</td>
-        <td class="${dz>0?'dz-pos':'dz-neg'}">${fmt(r.d_z)}</td>
+        <td class="${dzClass(r.d_x)}">${fmt(r.d_x)}</td>
+        <td class="${dzClass(r.d_y)}">${fmt(r.d_y)}</td>
+        <td class="${dzClass(r.d_z)}">${fmt(r.d_z)}</td>
         <td>${(+r.pts).toLocaleString()}</td>
       </tr>`;
     }).join('');
