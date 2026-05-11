@@ -8,106 +8,95 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;700&display=swap');
-  :root {
-    --bg:#faf7f5;--surface:#fff;--surface2:#fdf4ee;--border:#f0e0d0;
-    --accent:#e8590c;--accent-light:#fdeee6;--text:#1a1a1a;--text-dim:#8a7060;
-    --pass:#16a34a;--fail:#dc2626;
-    --shadow:0 1px 3px rgba(232,89,12,.08),0 1px 2px rgba(0,0,0,.04);
-    --shadow-md:0 4px 12px rgba(232,89,12,.12),0 2px 4px rgba(0,0,0,.04);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;700&display=swap');
+:root {
+  --bg:#faf7f5;--surface:#fff;--surface2:#fdf4ee;--border:#f0e0d0;
+  --accent:#e8590c;--accent-light:#fdeee6;--text:#1a1a1a;--text-dim:#8a7060;
+  --pass:#16a34a;--fail:#dc2626;
+  --shadow:0 1px 3px rgba(232,89,12,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(232,89,12,.12),0 2px 4px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
 
-  /* HEADER */
-  header{display:flex;align-items:center;gap:16px;padding:16px 32px;border-bottom:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow)}
-  .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem}
-  header h1{font-size:1rem;font-weight:700;color:var(--text)}
-  header span{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);margin-left:auto;background:var(--accent-light);padding:4px 10px;border-radius:20px;border:1px solid var(--border);font-weight:500}
+header{display:flex;align-items:center;gap:16px;padding:16px 32px;border-bottom:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow)}
+.logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+header h1{font-size:1rem;font-weight:700;color:var(--text)}
+#db-name{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);margin-left:auto;background:var(--accent-light);padding:4px 10px;border-radius:20px;border:1px solid var(--border);font-weight:500}
 
-  /* LOADING */
-  #loadingScreen{display:none;position:fixed;inset:0;background:var(--bg);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:24px}
-  #loadingScreen.active{display:flex}
-  .loading-ring-wrap{position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center}
-  .loading-ring{position:absolute;inset:0;border:3px dashed var(--accent);border-radius:50%;animation:spin 4s linear infinite}
-  .loading-ring::after{content:'';position:absolute;inset:10px;border:1px solid var(--border);border-radius:50%;animation:spin 2s linear infinite reverse}
-  .loading-ring::before{content:'';position:absolute;inset:22px;border:1px dashed rgba(232,89,12,.25);border-radius:50%;animation:spin 1.5s linear infinite}
-  .loading-icon{font-size:2rem;animation:spin 4s linear infinite reverse}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .loading-label{font-size:.95rem;font-weight:600;color:var(--text)}
-  .loading-sub{font-size:.75rem;color:var(--text-dim);font-family:'DM Mono',monospace}
-  .loading-bar-wrap{width:220px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-  .loading-bar{height:100%;width:0%;background:var(--accent);border-radius:2px;transition:width .3s ease}
+#loadingScreen{display:none;position:fixed;inset:0;background:var(--bg);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+#loadingScreen.active{display:flex}
+.loading-ring-wrap{position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center}
+.loading-ring{position:absolute;inset:0;border:3px dashed var(--accent);border-radius:50%;animation:spin 4s linear infinite}
+.loading-ring::after{content:'';position:absolute;inset:10px;border:1px solid var(--border);border-radius:50%;animation:spin 2s linear infinite reverse}
+.loading-ring::before{content:'';position:absolute;inset:22px;border:1px dashed rgba(232,89,12,.25);border-radius:50%;animation:spin 1.5s linear infinite}
+.loading-icon{font-size:2rem;animation:spin 4s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-label{font-size:.95rem;font-weight:600;color:var(--text)}
+.loading-sub{font-size:.75rem;color:var(--text-dim);font-family:'DM Mono',monospace}
+.loading-bar-wrap{width:220px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.loading-bar{height:100%;width:0%;background:var(--accent);border-radius:2px;transition:width .3s ease}
 
-  /* DROPZONE */
-  #dropzone{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 65px);gap:20px;cursor:pointer;transition:background .2s}
-  #dropzone.drag-over{background:var(--accent-light)}
-  .drop-ring{width:180px;height:180px;border:2px dashed var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;animation:spin 20s linear infinite}
-  .drop-ring::after{content:'';position:absolute;width:158px;height:158px;border:1px solid var(--border);border-radius:50%;animation:spin 10s linear infinite reverse}
-  .drop-ring::before{content:'';position:absolute;width:135px;height:135px;border:1px dashed rgba(232,89,12,.25);border-radius:50%;animation:spin 6s linear infinite}
-  .drop-icon{font-size:3rem;animation:spin 20s linear infinite reverse}
-  .drop-label{font-size:1rem;font-weight:600;color:var(--text)}
-  .drop-sub{font-size:.78rem;color:var(--text-dim);font-family:'DM Mono',monospace}
-  #fileInput{display:none}
+#dropzone{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 65px);gap:20px;cursor:pointer;transition:background .2s}
+#dropzone.drag-over{background:var(--accent-light)}
+.drop-ring{width:180px;height:180px;border:2px dashed var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;animation:spin 20s linear infinite}
+.drop-ring::after{content:'';position:absolute;width:158px;height:158px;border:1px solid var(--border);border-radius:50%;animation:spin 10s linear infinite reverse}
+.drop-ring::before{content:'';position:absolute;width:135px;height:135px;border:1px dashed rgba(232,89,12,.25);border-radius:50%;animation:spin 6s linear infinite}
+.drop-icon{font-size:3rem;animation:spin 20s linear infinite reverse}
+.drop-label{font-size:1rem;font-weight:600}
+.drop-sub{font-size:.78rem;color:var(--text-dim);font-family:'DM Mono',monospace}
+#fileInput{display:none}
 
-  /* DASHBOARD */
-  #dashboard{display:none;padding:24px 32px}
-  .load-new{display:flex;justify-content:flex-end;margin-bottom:16px}
+#dashboard{display:none;padding:24px 32px}
 
-  /* FILTERS */
-  .filters{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;align-items:flex-end;box-shadow:var(--shadow)}
-  .filter-group{display:flex;flex-direction:column;gap:4px}
-  .filter-group label{font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em}
-  .filter-group select,.filter-group input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.85rem;min-width:130px}
-  .filter-group select:focus,.filter-group input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
-  .btn{padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;transition:all .15s}
-  .btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
-  .btn-primary{background:var(--accent);color:#fff}
-  .btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--text-dim)}
+.filters{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;align-items:flex-end;box-shadow:var(--shadow)}
+.filter-group{display:flex;flex-direction:column;gap:4px}
+.filter-group label{font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em}
+.filter-group input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.85rem}
+.filter-group input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.btn{padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;transition:all .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--text-dim)}
 
-  /* SITE TOGGLES */
-  .site-toggles{display:flex;gap:8px;align-items:center}
-  .site-toggle{padding:6px 16px;border-radius:20px;border:2px solid transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.78rem;font-weight:500;transition:all .15s;opacity:.35;background:var(--surface2);color:var(--text)}
-  .site-toggle.active{opacity:1;color:#fff}
-  .site-toggle[data-site="CVM"]{border-color:#e8590c}.site-toggle[data-site="CVM"].active{background:#e8590c}
-  .site-toggle[data-site="SRM"]{border-color:#1a1a1a}.site-toggle[data-site="SRM"].active{background:#1a1a1a}
-  .site-toggle[data-site="GRM"]{border-color:#c44a08}.site-toggle[data-site="GRM"].active{background:#c44a08}
-  .site-toggle[data-site="PDM"]{border-color:#f4a261;color:#8a4a00}.site-toggle[data-site="PDM"].active{background:#f4a261;color:#fff}
+.toggles{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tog{padding:5px 14px;border-radius:20px;border:2px solid var(--border);cursor:pointer;font-family:'DM Mono',monospace;font-size:.75rem;font-weight:500;transition:all .15s;background:var(--surface2);color:var(--text-dim);opacity:.5}
+.tog.on{opacity:1;background:var(--accent);border-color:var(--accent);color:#fff}
+.tog[data-site="CVM"]{border-color:#e8590c;color:#e8590c}.tog[data-site="CVM"].on{background:#e8590c;color:#fff}
+.tog[data-site="SRM"]{border-color:#1a1a1a;color:#1a1a1a}.tog[data-site="SRM"].on{background:#1a1a1a;color:#fff}
+.tog[data-site="GRM"]{border-color:#c44a08;color:#c44a08}.tog[data-site="GRM"].on{background:#c44a08;color:#fff}
+.tog[data-site="PDM"]{border-color:#f4a261;color:#8a4a00}.tog[data-site="PDM"].on{background:#f4a261;color:#fff}
 
-  /* STATS */
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
-  .stat-card.blue{border-top:3px solid var(--accent)}
-  .stat-card.orange{border-top:3px solid #f97316}
-  .stat-card.green{border-top:3px solid #16a34a}
-  .stat-card.red{border-top:3px solid var(--fail)}
-  .stat-label{font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-  .stat-value{font-size:1.75rem;font-weight:700;font-family:'DM Mono',monospace}
-  .stat-value.blue{color:var(--accent)}.stat-value.orange{color:#f97316}.stat-value.green{color:#16a34a}.stat-value.red{color:var(--fail)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
+.stat-card.c1{border-top:3px solid var(--accent)}
+.stat-card.c2{border-top:3px solid #f97316}
+.stat-card.c3{border-top:3px solid #16a34a}
+.stat-card.c4{border-top:3px solid var(--fail)}
+.slabel{font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.sval{font-size:1.75rem;font-weight:700;font-family:'DM Mono',monospace}
+.sval.c1{color:var(--accent)}.sval.c2{color:#f97316}.sval.c3{color:#16a34a}.sval.c4{color:var(--fail)}
 
-  /* CHARTS */
-  .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
-  .charts-bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
-  .chart-title{font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-  .chart-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
-  .chart-title .dot.orange{background:#f97316}.chart-title .dot.green{background:#16a34a}
-  canvas{height:260px !important}
+.charts-bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.ctitle{font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.cdot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.cdot.o{background:#f97316}
+canvas{height:260px;max-height:260px}
+#histChart{height:100% !important;max-height:none !important}
 
-  /* TABLE */
-  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow)}
-  .table-header{padding:14px 20px;border-bottom:1px solid var(--border);font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:flex;justify-content:space-between;align-items:center;background:var(--surface2)}
-  .table-wrap{overflow-x:auto;max-height:400px;overflow-y:auto}
-  table{width:100%;border-collapse:collapse;font-size:.82rem}
-  th{background:var(--surface2);padding:10px 14px;text-align:left;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--border)}
-  td{padding:9px 14px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;white-space:nowrap;font-size:.8rem}
-  tr:hover td{background:var(--accent-light)}
-  .badge{padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:700}
-  .badge-mtd{background:var(--accent-light);color:var(--accent)}
-  .badge-gt{background:#f0f0f0;color:#1a1a1a}
-  .dz-pos{color:var(--pass);font-weight:600}.dz-neg{color:var(--fail);font-weight:600}
-
-  @media(max-width:900px){.charts-grid,.charts-bottom{grid-template-columns:1fr}}
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow)}
+.table-header{padding:14px 20px;border-bottom:1px solid var(--border);font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:flex;justify-content:space-between;align-items:center;background:var(--surface2)}
+.table-wrap{overflow-x:auto;max-height:400px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{background:var(--surface2);padding:10px 14px;text-align:left;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:9px 14px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;white-space:nowrap;font-size:.8rem}
+tr:hover td{background:var(--accent-light)}
+.badge{padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:700}
+.bmtd{background:var(--accent-light);color:var(--accent)}
+.bgt{background:#f0f0f0;color:#1a1a1a}
+.gn{color:var(--pass);font-weight:600}.rd{color:var(--fail);font-weight:600}
+@media(max-width:900px){.charts-bottom{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -116,13 +105,11 @@
   <div class="logo">🛩️</div>
   <h1>UAV Processing Results</h1>
   <span id="db-name">No database loaded</span>
+  <button class="btn btn-ghost" id="loadNewBtn" style="display:none;margin-left:12px;font-size:.78rem;padding:5px 12px;" onclick="resetDashboard()">⟳ Load new DB</button>
 </header>
 
 <div id="loadingScreen">
-  <div class="loading-ring-wrap">
-    <div class="loading-ring"></div>
-    <div class="loading-icon">🗄️</div>
-  </div>
+  <div class="loading-ring-wrap"><div class="loading-ring"></div><div class="loading-icon">🗄️</div></div>
   <div class="loading-label">Processing database...</div>
   <div class="loading-sub" id="loadingStatus">Reading records</div>
   <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
@@ -136,43 +123,50 @@
 </div>
 
 <div id="dashboard">
-  <div class="load-new">
-    <button class="btn btn-ghost" onclick="resetDashboard()">⟳ Load new DB</button>
-  </div>
   <div class="filters">
-    <div class="filter-group">
-      <label>Sites</label>
-      <div class="site-toggles">
-        <button class="site-toggle active" data-site="CVM" onclick="toggleSite(this)">CVM</button>
-        <button class="site-toggle active" data-site="SRM" onclick="toggleSite(this)">SRM</button>
-        <button class="site-toggle active" data-site="GRM" onclick="toggleSite(this)">GRM</button>
-        <button class="site-toggle active" data-site="PDM" onclick="toggleSite(this)">PDM</button>
-      </div>
-    </div>
-    <div class="filter-group"><label>UAV</label><select id="filterUav"><option value="">All UAVs</option></select></div>
-    <div class="filter-group"><label>Target</label><select id="filterTarget"><option value="">All Targets</option></select></div>
     <div class="filter-group"><label>Date From</label><input type="date" id="filterFrom"></div>
     <div class="filter-group"><label>Date To</label><input type="date" id="filterTo"></div>
-    <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
-    <button class="btn btn-ghost" onclick="clearFilters()">Clear</button>
+    <div class="filter-group">
+      <label>Sites</label>
+      <div class="toggles">
+        <button class="tog on" data-site="CVM" data-group="site" onclick="tog(this)">CVM</button>
+        <button class="tog on" data-site="SRM" data-group="site" onclick="tog(this)">SRM</button>
+        <button class="tog on" data-site="GRM" data-group="site" onclick="tog(this)">GRM</button>
+        <button class="tog on" data-site="PDM" data-group="site" onclick="tog(this)">PDM</button>
+      </div>
+    </div>
+    <div class="filter-group"><label>UAV</label><div class="toggles" id="uavToggles"></div></div>
+    <div class="filter-group"><label>Target</label><div class="toggles" id="targetToggles"></div></div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:flex-end">
+      <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+      <button class="btn btn-ghost" onclick="clearFilters()">Clear</button>
+    </div>
   </div>
 
   <div class="stats">
-    <div class="stat-card blue"><div class="stat-label">Total Flights</div><div class="stat-value blue" id="statFlights">—</div></div>
-    <div class="stat-card orange"><div class="stat-label">Median dZ (m)</div><div class="stat-value orange" id="statMedianDz">—</div></div>
-    <div class="stat-card green"><div class="stat-label">Mean Height (m)</div><div class="stat-value green" id="statHeight">—</div></div>
-    <div class="stat-card blue"><div class="stat-label">Total Points</div><div class="stat-value blue" id="statPts">—</div></div>
-    <div class="stat-card red"><div class="stat-label">|dZ| > 0.1m</div><div class="stat-value red" id="statFails">—</div></div>
+    <div class="stat-card c1"><div class="slabel">Total Flights</div><div class="sval c1" id="statFlights">—</div></div>
+    <div class="stat-card c2"><div class="slabel">Median dZ (m)</div><div class="sval c2" id="statMedianDz">—</div></div>
+    <div class="stat-card c3"><div class="slabel">Mean Height (m)</div><div class="sval c3" id="statHeight">—</div></div>
+    <div class="stat-card c3"><div class="slabel">Max Height (m)</div><div class="sval c3" id="statMaxHeight">—</div></div>
+    <div class="stat-card c4"><div class="slabel">|dZ| > 0.120m</div><div class="sval c4" id="statFails">—</div></div>
   </div>
 
-  <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title"><div class="dot"></div>dZ Distribution — vertical accuracy by site</div>
-      <canvas id="histChart"></canvas>
+  <!-- Histogram row -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start">
+    <div class="chart-card" style="width:200px;flex-shrink:0">
+      <div class="ctitle"><div class="cdot"></div>Site Stats</div>
+      <div id="siteStatsList"></div>
     </div>
+    <div class="chart-card" style="flex:1;min-width:0">
+      <div class="ctitle"><div class="cdot"></div>dZ Distribution — vertical accuracy by site</div>
+      <div style="position:relative;height:480px"><canvas id="histChart"></canvas></div>
+    </div>
+  </div>
+
   <div class="charts-bottom">
-    <div class="chart-card"><div class="chart-title"><div class="dot"></div>dZ over Time</div><canvas id="timeChart"></canvas></div>
-    <div class="chart-card"><div class="chart-title"><div class="dot orange"></div>dX / dY Scatter</div><canvas id="xyChart"></canvas></div>
-    <div class="chart-card"><div class="chart-title"><div class="dot orange"></div>Flights by Site</div><canvas id="siteChart"></canvas></div>
+    <div class="chart-card"><div class="ctitle"><div class="cdot"></div>dZ over Time</div><canvas id="timeChart"></canvas></div>
+    <div class="chart-card"><div class="ctitle"><div class="cdot o"></div>dX / dY Scatter</div><canvas id="xyChart"></canvas></div>
+    <div class="chart-card"><div class="ctitle"><div class="cdot o"></div>Flights by Site</div><canvas id="siteChart"></canvas></div>
   </div>
 
   <div class="table-card">
@@ -187,302 +181,377 @@
 </div>
 
 <script>
-  let SQL = null, db = null, allRows = [], charts = {};
+let SQL=null, db=null, allRows=[], charts={};
 
-  const SITES = ['CVM','SRM','GRM','PDM'];
-  const SC = {
-    CVM:{border:'#e8590c',bg:'rgba(232,89,12,0.12)'},
-    SRM:{border:'#1a1a1a',bg:'rgba(26,26,26,0.10)'},
-    GRM:{border:'#c44a08',bg:'rgba(196,74,8,0.12)'},
-    PDM:{border:'#f4a261',bg:'rgba(244,162,97,0.15)'},
-  };
+const SITES=['CVM','SRM','GRM','PDM'];
+const SC={
+  CVM:{b:'#e8590c',bg:'rgba(232,89,12,0.12)'},
+  SRM:{b:'#1a1a1a',bg:'rgba(26,26,26,0.10)'},
+  GRM:{b:'#c44a08',bg:'rgba(196,74,8,0.12)'},
+  PDM:{b:'#f4a261',bg:'rgba(244,162,97,0.15)'},
+};
 
-  // Init SQL.js
-  initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}` })
-    .then(s => { SQL = s; console.log('SQL.js ready'); });
+// SQL.js init
+initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`}).then(s=>{SQL=s;});
 
-  // Drop zone
-  const dz = document.getElementById('dropzone');
-  const fi = document.getElementById('fileInput');
-  dz.addEventListener('click', () => fi.click());
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); loadFile(e.dataTransfer.files[0]); });
-  fi.addEventListener('change', e => loadFile(e.target.files[0]));
+// Drop zone
+const DZ=document.getElementById('dropzone');
+const FI=document.getElementById('fileInput');
+DZ.addEventListener('click',()=>FI.click());
+DZ.addEventListener('dragover',e=>{e.preventDefault();DZ.classList.add('drag-over');});
+DZ.addEventListener('dragleave',()=>DZ.classList.remove('drag-over'));
+DZ.addEventListener('drop',e=>{e.preventDefault();DZ.classList.remove('drag-over');load(e.dataTransfer.files[0]);});
+FI.addEventListener('change',e=>load(e.target.files[0]));
 
-  function setLoading(msg, pct) {
-    document.getElementById('loadingStatus').textContent = msg;
-    document.getElementById('loadingBar').style.width = pct + '%';
-  }
+function setLoad(msg,pct){
+  document.getElementById('loadingStatus').textContent=msg;
+  document.getElementById('loadingBar').style.width=pct+'%';
+}
 
-  function loadFile(file) {
-    if (!file) return;
-    if (!SQL) { alert('SQL engine still loading, please wait a moment and try again.'); return; }
-    document.getElementById('db-name').textContent = file.name;
-    dz.style.display = 'none';
-    document.getElementById('loadingScreen').classList.add('active');
-    setLoading('Reading file...', 10);
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const reader = new FileReader();
-      reader.onerror = () => {
-        document.getElementById('loadingScreen').classList.remove('active');
-        dz.style.display = 'flex';
-        alert('Failed to read file.');
-      };
-      reader.onload = evt => {
-        setLoading('Opening database...', 30);
-        requestAnimationFrame(() => {
-          try {
-            db = new SQL.Database(new Uint8Array(evt.target.result));
-            setLoading('Filtering 2020-present records...', 55);
-            requestAnimationFrame(() => {
-              allRows = queryAll();
-              setLoading(`${allRows.length} records loaded — rendering...`, 80);
-              requestAnimationFrame(() => {
-                populateFilters();
-                // Show dashboard first so Chart.js knows the real dimensions
-                document.getElementById('loadingScreen').classList.remove('active');
-                document.getElementById('dashboard').style.display = 'block';
-                // Force layout recalc, then render charts
-                document.getElementById('dashboard').getBoundingClientRect();
-                setTimeout(() => {
-                  renderDashboard(getFilteredRows());
-                  setLoading('Done', 100);
-                }, 50);
-              });
+function load(file){
+  if(!file)return;
+  if(!SQL){alert('SQL engine loading, try again.');return;}
+  document.getElementById('db-name').textContent=file.name;
+  DZ.style.display='none';
+  document.getElementById('loadingScreen').classList.add('active');
+  setLoad('Reading file...',10);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const r=new FileReader();
+    r.onerror=()=>{document.getElementById('loadingScreen').classList.remove('active');DZ.style.display='flex';alert('Failed to read file.');};
+    r.onload=e=>{
+      setLoad('Opening database...',30);
+      requestAnimationFrame(()=>{
+        try{
+          db=new SQL.Database(new Uint8Array(e.target.result));
+          setLoad('Filtering records...',55);
+          requestAnimationFrame(()=>{
+            allRows=query();
+            setLoad(allRows.length+' records — building...',75);
+            requestAnimationFrame(()=>{
+              buildFilters();
+              document.getElementById('loadingScreen').classList.remove('active');
+              document.getElementById('dashboard').style.display='block';
+              document.getElementById('loadNewBtn').style.display='inline-flex';
+              document.getElementById('dashboard').getBoundingClientRect();
+              setTimeout(()=>render(filtered()),50);
             });
-          } catch(err) {
-            document.getElementById('loadingScreen').classList.remove('active');
-            dz.style.display = 'flex';
-            alert('Error loading DB: ' + err.message);
-            console.error(err);
-          }
-        });
-      };
-      reader.readAsArrayBuffer(file);
-    }));
-  }
-
-  function queryAll() {
-    const res = db.exec(`SELECT * FROM uav WHERE site IN ('CVM','SRM','GRM','PDM') ORDER BY flight_time DESC`);
-    if (!res.length) return [];
-    const cols = res[0].columns;
-    const ftIdx = cols.indexOf('flight_time');
-
-    // Log raw samples
-    console.log('Raw flight_time samples:', res[0].values.slice(0,5).map(r => r[ftIdx] + ' (' + typeof r[ftIdx] + ')'));
-
-    const cutStart = new Date('2020-01-01T00:00:00');
-    const cutEnd   = new Date();
-
-    return res[0].values
-      .map(row => Object.fromEntries(cols.map((c,i) => [c, row[i]])))
-      .filter(r => {
-        const ft = r.flight_time;
-        if (ft == null) return false;
-        let d;
-        if (typeof ft === 'number') {
-          // Could be unix seconds or unix milliseconds
-          d = ft > 1e10 ? new Date(ft) : new Date(ft * 1000);
-        } else {
-          // String — try direct parse and space-to-T replacement
-          d = new Date(String(ft).replace(' ', 'T'));
+          });
+        }catch(err){
+          document.getElementById('loadingScreen').classList.remove('active');
+          DZ.style.display='flex';
+          alert('Error: '+err.message);
         }
-        if (isNaN(d.getTime())) return false;
-        return d >= cutStart && d <= cutEnd;
       });
-  }
+    };
+    r.readAsArrayBuffer(file);
+  }));
+}
 
-  function toggleSite(btn) { btn.classList.toggle('active'); renderDashboard(getFilteredRows()); }
-
-  function getActiveSites() {
-    return [...document.querySelectorAll('.site-toggle.active')].map(b => b.dataset.site);
-  }
-
-  function getFilteredRows() {
-    const sites  = getActiveSites();
-    const uav    = document.getElementById('filterUav').value;
-    const target = document.getElementById('filterTarget').value;
-    const from   = document.getElementById('filterFrom').value;
-    const to     = document.getElementById('filterTo').value;
-    return allRows.filter(r => {
-      const d = (r.flight_time || '').slice(0,10);
-      return sites.includes(r.site)
-        && (!uav    || r.uav === uav)
-        && (!target || r.target === target)
-        && (!from   || d >= from)
-        && (!to     || d <= to);
+function query(){
+  const res=db.exec(`SELECT * FROM uav WHERE site IN ('CVM','SRM','GRM','PDM') ORDER BY flight_time DESC`);
+  if(!res.length)return[];
+  const cols=res[0].columns;
+  const t0=new Date('2020-01-01'), t1=new Date();
+  return res[0].values
+    .map(row=>Object.fromEntries(cols.map((c,i)=>[c,row[i]])))
+    .filter(r=>{
+      if(!r.flight_time)return false;
+      const d=new Date(String(r.flight_time).replace(' ','T'));
+      return !isNaN(d)&&d>=t0&&d<=t1;
     });
-  }
+}
 
-  function populateFilters() {
-    pop('filterUav',    [...new Set(allRows.map(r => r.uav))].sort());
-    pop('filterTarget', [...new Set(allRows.map(r => r.target))].sort());
-    const dates = allRows.map(r => (r.flight_time||'').slice(0,10)).filter(Boolean).sort();
-    if (dates.length) {
-      document.getElementById('filterFrom').value = dates[0];
-      document.getElementById('filterTo').value   = dates[dates.length-1];
-    }
-  }
+// Toggle helpers
+function tog(btn){btn.classList.toggle('on');render(filtered());}
 
-  function pop(id, vals) {
-    const sel = document.getElementById(id);
-    sel.innerHTML = sel.options[0].outerHTML + vals.map(v => `<option value="${v}">${v}</option>`).join('');
-  }
+function activeVals(containerId){
+  return[...document.querySelectorAll('#'+containerId+' .tog.on')].map(b=>b.dataset.val);
+}
+function activeSites(){
+  return[...document.querySelectorAll('[data-group="site"].on')].map(b=>b.dataset.site);
+}
 
-  function applyFilters() { renderDashboard(getFilteredRows()); }
+function buildFilters(){
+  buildTogs('uavToggles',[...new Set(allRows.map(r=>r.uav))].sort());
+  buildTogs('targetToggles',[...new Set(allRows.map(r=>r.target))].sort());
+  const today=new Date();
+  const oneYearAgo=new Date(today);
+  oneYearAgo.setFullYear(today.getFullYear()-1);
+  document.getElementById('filterFrom').value=oneYearAgo.toISOString().slice(0,10);
+  document.getElementById('filterTo').value=today.toISOString().slice(0,10);
+}
 
-  function clearFilters() {
-    document.querySelectorAll('.site-toggle').forEach(b => b.classList.add('active'));
-    ['filterUav','filterTarget'].forEach(id => document.getElementById(id).value = '');
-    populateFilters();
-    renderDashboard(getFilteredRows());
-  }
+function buildTogs(id,vals){
+  const uavDefaults=['M300','P4RTK'];
+  const targetDefaults=['MTD'];
+  document.getElementById(id).innerHTML=vals.map(v=>{
+    let on=true;
+    if(id==='uavToggles') on=uavDefaults.some(d=>v.includes(d));
+    if(id==='targetToggles') on=targetDefaults.includes(v);
+    return`<button class="tog${on?' on':''}" data-val="${v}" data-group="${id}" onclick="tog(this)">${v}</button>`;
+  }).join('');
+}
 
-  function resetDashboard() {
-    dz.style.display = 'flex';
-    document.getElementById('dashboard').style.display = 'none';
-    Object.values(charts).forEach(c => c.destroy());
-    charts = {}; allRows = [];
-    fi.value = '';
-    document.getElementById('db-name').textContent = 'No database loaded';
-  }
+function filtered(){
+  const sites=activeSites();
+  const uavs=activeVals('uavToggles');
+  const targets=activeVals('targetToggles');
+  const from=document.getElementById('filterFrom').value;
+  const to=document.getElementById('filterTo').value;
+  return allRows.filter(r=>{
+    const d=(r.flight_time||'').slice(0,10);
+    return sites.includes(r.site)
+      &&(!uavs.length||uavs.includes(r.uav))
+      &&(!targets.length||targets.includes(r.target))
+      &&(!from||d>=from)
+      &&(!to||d<=to);
+  });
+}
 
-  function renderDashboard(rows) {
-    updateStats(rows);
-    renderHistogram();
-    renderSiteChart(rows);
-    renderTimeChart(rows);
-    renderXYChart(rows);
-    renderTable(rows);
-  }
+function applyFilters(){render(filtered());}
+function clearFilters(){
+  document.querySelectorAll('.tog').forEach(b=>b.classList.add('on'));
+  buildFilters();
+  render(filtered());
+}
+function resetDashboard(){
+  DZ.style.display='flex';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('loadNewBtn').style.display='none';
+  Object.values(charts).forEach(c=>c.destroy());
+  charts={};allRows=[];FI.value='';
+  document.getElementById('db-name').textContent='No database loaded';
+}
 
-  const med = a => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; };
-  const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : null;
-  const fmt = (v,d=3) => v==null?'—':(+v).toFixed(d);
+// Render
+function render(rows){
+  stats(rows);
+  histogram();
+  siteChart(rows);
+  timeChart(rows);
+  xyChart(rows);
+  siteStats();
+  tableRender(rows);
+}
 
-  function updateStats(rows) {
-    const dz = rows.map(r=>+r.d_z).filter(v=>!isNaN(v));
-    const h  = rows.map(r=>+r.height).filter(v=>!isNaN(v));
-    const pt = rows.map(r=>+r.pts).filter(v=>!isNaN(v));
-    document.getElementById('statFlights').textContent  = rows.length;
-    document.getElementById('statMedianDz').textContent = fmt(med(dz));
-    document.getElementById('statHeight').textContent   = fmt(avg(h),1);
-    document.getElementById('statPts').textContent      = pt.reduce((a,b)=>a+b,0).toLocaleString();
-    document.getElementById('statFails').textContent    = dz.filter(v=>Math.abs(v)>0.1).length;
-  }
+const med=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+const fmt=(v,d=3)=>v==null?'—':(+v).toFixed(d);
+const dCls=v=>Math.abs(+v)>0.120?'rd':'gn';
 
-  function renderHistogram() {
-    const active = getActiveSites();
-    const uav=document.getElementById('filterUav').value, target=document.getElementById('filterTarget').value;
-    const from=document.getElementById('filterFrom').value, to=document.getElementById('filterTo').value;
-    const binSize=0.01, minB=-0.3, maxB=0.3;
-    const bins=[]; for(let b=minB;b<=maxB;b=+(b+binSize).toFixed(3)) bins.push(b);
-    const datasets = active.map(site => {
-      const sr = allRows.filter(r => {
-        const d=(r.flight_time||'').slice(0,10);
-        return r.site===site && (!uav||r.uav===uav) && (!target||r.target===target) && (!from||d>=from) && (!to||d<=to);
-      });
-      const dzs=sr.map(r=>+r.d_z).filter(v=>!isNaN(v));
-      const counts=new Array(bins.length).fill(0);
-      dzs.forEach(v=>{const i=Math.floor((v-minB)/binSize);if(i>=0&&i<counts.length)counts[i]++;});
-      const c=SC[site];
-      return {label:site,data:counts,borderColor:c.border,backgroundColor:c.bg,borderWidth:2,pointRadius:0,fill:true,tension:0.4};
+function stats(rows){
+  const dz=rows.map(r=>+r.d_z).filter(v=>!isNaN(v));
+  const h=rows.map(r=>+r.height).filter(v=>!isNaN(v));
+  const pt=rows.map(r=>+r.pts).filter(v=>!isNaN(v));
+  document.getElementById('statFlights').textContent=rows.length;
+  document.getElementById('statMedianDz').textContent=fmt(med(dz));
+  document.getElementById('statHeight').textContent=fmt(avg(h),1);
+  document.getElementById('statMaxHeight').textContent=h.length?fmt(Math.max(...h),1):'—';
+  document.getElementById('statFails').textContent=dz.filter(v=>Math.abs(v)>0.120).length;
+}
+
+function siteStats(){
+  const active=activeSites();
+  const uavs=activeVals('uavToggles');
+  const targets=activeVals('targetToggles');
+  const from=document.getElementById('filterFrom').value;
+  const to=document.getElementById('filterTo').value;
+  document.getElementById('siteStatsList').innerHTML=active.map(site=>{
+    const sr=allRows.filter(r=>{
+      const d=(r.flight_time||'').slice(0,10);
+      return r.site===site&&(!uavs.length||uavs.includes(r.uav))&&(!targets.length||targets.includes(r.target))&&(!from||d>=from)&&(!to||d<=to);
     });
+    const dzs=sr.map(r=>+r.d_z).filter(v=>!isNaN(v));
+    if(!dzs.length)return'';
+    const mean=dzs.reduce((a,b)=>a+b,0)/dzs.length;
+    const failed=dzs.filter(v=>Math.abs(v)>0.120).length;
+    const failPct=(failed/dzs.length*100).toFixed(1);
+    const meanPass=Math.abs(mean)<=0.120;
+    const c=SC[site];
+    return`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px">
+        <span style="width:9px;height:9px;border-radius:50%;background:${c.b};display:inline-block;flex-shrink:0"></span>
+        <span style="font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;color:${c.b}">${site}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="background:var(--surface2);border-radius:6px;padding:6px 8px">
+          <div style="font-family:'DM Sans',sans-serif;font-size:.6rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">μ dZ</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:${meanPass?'var(--pass)':'var(--fail)'}">${mean>=0?'+':''}${mean.toFixed(3)}m</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:6px;padding:6px 8px">
+          <div style="font-family:'DM Sans',sans-serif;font-size:.6rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Failed</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:var(--fail)">${failPct}%</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--fail);opacity:.75">${failed}/${dzs.length}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-    // Find label indices closest to -0.120 and +0.120
-    const negIdx = bins.findIndex(b => Math.abs(b - (-0.120)) < binSize/2);
-    const posIdx = bins.findIndex(b => Math.abs(b - 0.120) < binSize/2);
-    const negLabel = bins[negIdx]?.toFixed(2) ?? '-0.12';
-    const posLabel = bins[posIdx]?.toFixed(2) ?? '0.12';
+function histogram(){
+  const active=activeSites();
+  const uavs=activeVals('uavToggles');
+  const targets=activeVals('targetToggles');
+  const from=document.getElementById('filterFrom').value;
+  const to=document.getElementById('filterTo').value;
+  const binSize=0.01,minB=-0.2,maxB=0.2;
+  const bins=[];for(let b=minB;b<=maxB;b=+(b+binSize).toFixed(3))bins.push(b);
+  const labels=bins.map(b=>b.toFixed(2));
 
-    mkChart('histChart','line',{labels:bins.map(b=>b.toFixed(2)),datasets},{
-      plugins:{
-        legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:11,family:'DM Mono'}}},
-        tooltip:{callbacks:{title:c=>`dZ: ${c[0].label}m`,label:c=>`${c.dataset.label}: ${c.raw} flights`}},
-        annotation:{
-          annotations:{
-            negLine:{type:'line',xMin:negLabel,xMax:negLabel,borderColor:'rgba(220,38,38,0.7)',borderWidth:2,borderDash:[6,3],
-              label:{content:'-0.120m',display:true,position:'start',color:'#dc2626',font:{size:10,family:'DM Mono'},backgroundColor:'rgba(255,255,255,0.8)'}},
-            posLine:{type:'line',xMin:posLabel,xMax:posLabel,borderColor:'rgba(220,38,38,0.7)',borderWidth:2,borderDash:[6,3],
-              label:{content:'+0.120m',display:true,position:'start',color:'#dc2626',font:{size:10,family:'DM Mono'},backgroundColor:'rgba(255,255,255,0.8)'}}
-          }
-        }
-      },
-      scales:{x:{title:{display:true,text:'dZ (m)',color:'#8a7060'},ticks:{maxTicksLimit:20}},y:{title:{display:true,text:'Count',color:'#8a7060'},beginAtZero:true}}
+  const datasets=active.map(site=>{
+    const sr=allRows.filter(r=>{
+      const d=(r.flight_time||'').slice(0,10);
+      return r.site===site&&(!uavs.length||uavs.includes(r.uav))&&(!targets.length||targets.includes(r.target))&&(!from||d>=from)&&(!to||d<=to);
     });
-  }
+    const dzs=sr.map(r=>+r.d_z).filter(v=>!isNaN(v));
+    const counts=new Array(bins.length).fill(0);
+    dzs.forEach(v=>{const i=Math.floor((v-minB)/binSize);if(i>=0&&i<counts.length)counts[i]++;});
+    const c=SC[site];
+    return{label:site,data:counts,borderColor:c.b,backgroundColor:c.bg,borderWidth:2,pointRadius:0,fill:true,tension:0.4};
+  });
 
-  function renderSiteChart(rows) {
-    const cnt={}; SITES.forEach(s=>cnt[s]=0); rows.forEach(r=>{if(cnt[r.site]!==undefined)cnt[r.site]++;});
-    mkChart('siteChart','doughnut',{labels:SITES,datasets:[{data:SITES.map(s=>cnt[s]),backgroundColor:SITES.map(s=>SC[s].border),borderWidth:0}]},
-      {plugins:{legend:{position:'bottom',labels:{color:'#8a7060',font:{size:11}}}},cutout:'60%'});
-  }
+  const negL=bins.find(b=>Math.abs(b-(-0.12))<binSize/2)?.toFixed(2)??'-0.12';
+  const posL=bins.find(b=>Math.abs(b-0.12)<binSize/2)?.toFixed(2)??'0.12';
+  const zeroL=bins.find(b=>Math.abs(b)<binSize/2)?.toFixed(2)??'0.00';
 
-  function renderTimeChart(rows) {
-    const active=getActiveSites();
-    const datasets=active.map(site=>{
-      const sr=[...rows].filter(r=>r.site===site&&r.flight_time).sort((a,b)=>a.flight_time.localeCompare(b.flight_time));
-      const c=SC[site];
-      return {label:site,data:sr.map(r=>({x:r.flight_time.slice(0,10),y:+r.d_z})),borderColor:c.border,backgroundColor:c.bg,borderWidth:1.5,pointRadius:2,fill:false,tension:0.3};
-    });
-    mkChart('timeChart','line',{datasets},{
-      plugins:{legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:10,family:'DM Mono'}}}},
-      scales:{x:{type:'category',ticks:{maxTicksLimit:6}},y:{title:{display:true,text:'dZ (m)',color:'#8a7060'}}}
-    });
-  }
-
-  function renderXYChart(rows) {
-    const active=getActiveSites();
-    const datasets=active.map(site=>{const c=SC[site];return{label:site,data:rows.filter(r=>r.site===site).map(r=>({x:+r.d_x,y:+r.d_y})),backgroundColor:c.border+'aa',pointRadius:4};});
-    mkChart('xyChart','scatter',{datasets},{
-      plugins:{legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:10,family:'DM Mono'}}}},
-      scales:{x:{title:{display:true,text:'dX (m)',color:'#8a7060'}},y:{title:{display:true,text:'dY (m)',color:'#8a7060'}}}
-    });
-  }
-
-  function dzClass(v) { return Math.abs(+v) > 0.120 ? 'dz-neg' : 'dz-pos'; }
-
-  function renderTable(rows) {
-    document.getElementById('tableCount').textContent = `${rows.length} records`;
-    document.getElementById('tableBody').innerHTML = rows.slice(0,500).map(r => {
-      return `<tr>
-        <td>${r.id}</td>
-        <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SC[r.site]?.border||'#ccc'};margin-right:6px;vertical-align:middle;"></span>${r.site}</td>
-        <td>${r.psx}</td><td>${r.uav}</td>
-        <td><span class="badge ${r.target==='MTD'?'badge-mtd':'badge-gt'}">${r.target}</span></td>
-        <td>${r.flight_time}</td><td>${fmt(r.height,1)}</td>
-        <td class="${dzClass(r.d_x)}">${fmt(r.d_x)}</td>
-        <td class="${dzClass(r.d_y)}">${fmt(r.d_y)}</td>
-        <td class="${dzClass(r.d_z)}">${fmt(r.d_z)}</td>
-        <td>${(+r.pts).toLocaleString()}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  const CD = {
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{color:'#8a7060',font:{size:11}}}},
-    scales:{
-      x:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'}}},
-      y:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'}}}
-    }
+  const annotations={
+    zero:{type:'line',xMin:zeroL,xMax:zeroL,borderColor:'rgba(100,100,100,0.35)',borderWidth:1.5,label:{display:false}},
+    neg:{type:'line',xMin:negL,xMax:negL,borderColor:'rgba(220,38,38,0.7)',borderWidth:2,borderDash:[6,3],label:{content:'-0.120m',display:true,position:'start',color:'#dc2626',font:{size:10,family:'DM Mono'},backgroundColor:'rgba(255,255,255,0.8)'}},
+    pos:{type:'line',xMin:posL,xMax:posL,borderColor:'rgba(220,38,38,0.7)',borderWidth:2,borderDash:[6,3],label:{content:'+0.120m',display:true,position:'start',color:'#dc2626',font:{size:10,family:'DM Mono'},backgroundColor:'rgba(255,255,255,0.8)'}}
   };
 
-  function mkChart(id, type, data, options) {
-    if (charts[id]) charts[id].destroy();
-    charts[id] = new Chart(document.getElementById(id).getContext('2d'),
-      {type, data, options: merge(JSON.parse(JSON.stringify(CD)), options)});
+  // Mean line per active site
+  active.forEach(site=>{
+    const sr=allRows.filter(r=>{
+      const d=(r.flight_time||'').slice(0,10);
+      return r.site===site&&(!uavs.length||uavs.includes(r.uav))&&(!targets.length||targets.includes(r.target))&&(!from||d>=from)&&(!to||d<=to);
+    });
+    const dzs=sr.map(r=>+r.d_z).filter(v=>!isNaN(v));
+    if(!dzs.length)return;
+    const mean=dzs.reduce((a,b)=>a+b,0)/dzs.length;
+    const ml=mean.toFixed(2);
+    const positions=['15%','30%','45%','60%'];
+    annotations[`mean_${site}`]={type:'line',xMin:ml,xMax:ml,borderColor:SC[site].b,borderWidth:1.5,borderDash:[4,4],
+      label:{content:site,display:true,position:positions[active.indexOf(site)%4],color:'#fff',font:{size:10,family:'DM Mono',weight:'bold'},backgroundColor:SC[site].b,padding:{top:2,bottom:2,left:5,right:5},borderRadius:3}};
+  });
+
+  mk('histChart','line',{labels,datasets},{
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:11,family:'DM Mono'}}},
+      tooltip:{callbacks:{title:c=>`dZ: ${c[0].label}m`,label:c=>`${c.dataset.label}: ${c.raw} flights`}},
+      annotation:{annotations}
+    },
+    scales:{
+      x:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'},maxTicksLimit:20,callback:function(val,i){const v=this.getLabelForValue(i);return(v==='0.00'||v==='-0.10'||v==='-0.20'||v==='0.10'||v==='0.20'||parseFloat(v)%0.1===0)?v:null;}},title:{display:true,text:'dZ (m)',color:'#8a7060'}},
+      y:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'}},beginAtZero:true,title:{display:true,text:'Count',color:'#8a7060'}}
+    }
+  });
+}
+
+function siteChart(rows){
+  const cnt={};SITES.forEach(s=>cnt[s]=0);rows.forEach(r=>{if(cnt[r.site]!==undefined)cnt[r.site]++;});
+  mk('siteChart','doughnut',{labels:SITES,datasets:[{data:SITES.map(s=>cnt[s]),backgroundColor:SITES.map(s=>SC[s].b),borderWidth:0}]},
+    {plugins:{legend:{position:'bottom',labels:{color:'#8a7060',font:{size:11}}}},cutout:'60%'});
+}
+
+function timeChart(rows){
+  const active=activeSites();
+  const from=document.getElementById('filterFrom').value;
+  const to=document.getElementById('filterTo').value;
+
+  // Determine aggregation level from date range
+  const daysDiff=from&&to?(new Date(to)-new Date(from))/(1000*60*60*24):365;
+  let groupFn, label;
+  if(daysDiff>90){
+    groupFn=d=>d.slice(0,7); // YYYY-MM
+    label='Monthly avg dZ';
+  } else if(daysDiff>30){
+    groupFn=d=>{const dt=new Date(d);const wk=Math.floor((dt.getDate()-1)/7);return d.slice(0,7)+'-W'+(wk+1);}; // YYYY-MM-W#
+    label='Weekly avg dZ';
+  } else {
+    groupFn=d=>d.slice(0,10); // YYYY-MM-DD
+    label='Daily avg dZ';
   }
 
-  function merge(t, s) {
-    for (const k in s) {
-      if (s[k] && typeof s[k]==='object' && !Array.isArray(s[k])) { if(!t[k])t[k]={}; merge(t[k],s[k]); }
-      else t[k]=s[k];
+  const ds=active.map(site=>{
+    const sr=rows.filter(r=>r.site===site&&r.flight_time);
+    // Group and average
+    const groups={};
+    sr.forEach(r=>{
+      const key=groupFn(r.flight_time.slice(0,10));
+      if(!groups[key])groups[key]=[];
+      groups[key].push(+r.d_z);
+    });
+    const pts=Object.entries(groups)
+      .sort((a,b)=>a[0].localeCompare(b[0]))
+      .map(([k,vals])=>({x:k,y:vals.reduce((a,b)=>a+b,0)/vals.length}));
+    const c=SC[site];
+    return{label:site,data:pts,borderColor:c.b,backgroundColor:c.bg,borderWidth:2,pointRadius:3,pointHoverRadius:5,fill:false,tension:0.3};
+  });
+
+  mk('timeChart','line',{datasets:ds},{
+    plugins:{legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:10,family:'DM Mono'}}}},
+    scales:{
+      x:{type:'category',grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'},maxTicksLimit:12}},
+      y:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'}},title:{display:true,text:'avg dZ (m)',color:'#8a7060'}}
     }
-    return t;
+  });
+}
+
+function xyChart(rows){
+  const active=activeSites();
+  const dxAll=rows.map(r=>+r.d_x).filter(v=>!isNaN(v));
+  const dyAll=rows.map(r=>+r.d_y).filter(v=>!isNaN(v));
+  const meanDx=dxAll.length?dxAll.reduce((a,b)=>a+b,0)/dxAll.length:0;
+  const meanDy=dyAll.length?dyAll.reduce((a,b)=>a+b,0)/dyAll.length:0;
+  const ds=active.map(site=>{const c=SC[site];return{label:site,data:rows.filter(r=>r.site===site).map(r=>({x:+r.d_x,y:+r.d_y})),backgroundColor:c.b+'aa',pointRadius:4};});
+  // Mean crosshair
+  ds.push({label:'μ',data:[{x:-0.5,y:meanDy},{x:0.5,y:meanDy}],borderColor:'rgba(0,0,0,0.3)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,type:'line',fill:false});
+  ds.push({label:'μ',data:[{x:meanDx,y:-0.5},{x:meanDx,y:0.5}],borderColor:'rgba(0,0,0,0.3)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,type:'line',fill:false});
+  mk('xyChart','scatter',{datasets:ds},{
+    plugins:{legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:10,family:'DM Mono'},filter:i=>!i.text.includes('μ')}}},
+    scales:{x:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'}},title:{display:true,text:'dX (m)',color:'#8a7060'},min:-0.5,max:0.5},y:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'}},title:{display:true,text:'dY (m)',color:'#8a7060'},min:-0.5,max:0.5}}
+  });
+}
+
+function tableRender(rows){
+  document.getElementById('tableCount').textContent=rows.length+' records';
+  document.getElementById('tableBody').innerHTML=rows.slice(0,500).map(r=>`<tr>
+    <td>${r.id}</td>
+    <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SC[r.site]?.b||'#ccc'};margin-right:6px;vertical-align:middle"></span>${r.site}</td>
+    <td>${r.psx}</td><td>${r.uav}</td>
+    <td><span class="badge ${r.target==='MTD'?'bmtd':'bgt'}">${r.target}</span></td>
+    <td>${r.flight_time}</td><td>${fmt(r.height,1)}</td>
+    <td class="${dCls(r.d_x)}">${fmt(r.d_x)}</td>
+    <td class="${dCls(r.d_y)}">${fmt(r.d_y)}</td>
+    <td class="${dCls(r.d_z)}">${fmt(r.d_z)}</td>
+    <td>${(+r.pts).toLocaleString()}</td>
+  </tr>`).join('');
+}
+
+const BASE={
+  responsive:true,maintainAspectRatio:true,
+  plugins:{legend:{labels:{color:'#8a7060',font:{size:11}}}},
+  scales:{
+    x:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'}}},
+    y:{grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'}}}
   }
+};
+
+function mk(id,type,data,opts){
+  if(charts[id])charts[id].destroy();
+  const o=deep(JSON.parse(JSON.stringify(BASE)),opts||{});
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type,data,options:o});
+}
+
+function deep(t,s){
+  for(const k in s){
+    if(s[k]&&typeof s[k]==='object'&&!Array.isArray(s[k])){if(!t[k])t[k]={};deep(t[k],s[k]);}
+    else t[k]=s[k];
+  }
+  return t;
+}
 </script>
 </body>
 </html>
