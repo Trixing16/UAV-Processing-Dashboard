@@ -83,7 +83,7 @@ header h1{font-size:1rem;font-weight:700;color:var(--text)}
 .cdot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 .cdot.o{background:#f97316}
 canvas{height:260px;max-height:260px}
-#histChart{height:100% !important;max-height:none !important}
+#timeChart{height:100% !important;max-height:none !important}
 
 .table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow)}
 .table-header{padding:14px 20px;border-bottom:1px solid var(--border);font-size:.68rem;font-family:'DM Mono',monospace;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:flex;justify-content:space-between;align-items:center;background:var(--surface2)}
@@ -151,20 +151,20 @@ tr:hover td{background:var(--accent-light)}
     <div class="stat-card c4"><div class="slabel">|dZ| > 0.120m</div><div class="sval c4" id="statFails">—</div></div>
   </div>
 
-  <!-- Histogram row -->
+  <!-- Main chart row -->
   <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start">
     <div class="chart-card" style="width:200px;flex-shrink:0">
       <div class="ctitle"><div class="cdot"></div>Site Stats</div>
       <div id="siteStatsList"></div>
     </div>
     <div class="chart-card" style="flex:1;min-width:0">
-      <div class="ctitle"><div class="cdot"></div>dZ Distribution — vertical accuracy by site</div>
-      <div style="position:relative;height:480px"><canvas id="histChart"></canvas></div>
+      <div class="ctitle"><div class="cdot"></div>dZ over Time</div>
+      <div style="position:relative;height:480px"><canvas id="timeChart"></canvas></div>
     </div>
   </div>
 
   <div class="charts-bottom">
-    <div class="chart-card"><div class="ctitle"><div class="cdot"></div>dZ over Time</div><canvas id="timeChart"></canvas></div>
+    <div class="chart-card"><div class="ctitle"><div class="cdot"></div>dZ Distribution</div><canvas id="histChart"></canvas></div>
     <div class="chart-card"><div class="ctitle"><div class="cdot o"></div>dX / dY Scatter</div><canvas id="xyChart"></canvas></div>
     <div class="chart-card"><div class="ctitle"><div class="cdot o"></div>Flights by Site</div><canvas id="siteChart"></canvas></div>
   </div>
@@ -436,7 +436,6 @@ function histogram(){
   });
 
   mk('histChart','line',{labels,datasets},{
-    maintainAspectRatio:false,
     plugins:{
       legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:11,family:'DM Mono'}}},
       tooltip:{callbacks:{title:c=>`dZ: ${c[0].label}m`,label:c=>`${c.dataset.label}: ${c.raw} flights`}},
@@ -491,6 +490,7 @@ function timeChart(rows){
   });
 
   mk('timeChart','line',{datasets:ds},{
+    maintainAspectRatio:false,
     plugins:{legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:10,family:'DM Mono'}}}},
     scales:{
       x:{type:'category',grid:{color:'#f5ede6'},ticks:{color:'#8a7060',font:{size:10,family:'DM Mono'},maxTicksLimit:12}},
