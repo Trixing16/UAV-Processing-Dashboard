@@ -6,6 +6,7 @@
 <title>UAV Processing Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;700&display=swap');
   :root {
@@ -377,7 +378,7 @@
     const uav=document.getElementById('filterUav').value, target=document.getElementById('filterTarget').value;
     const from=document.getElementById('filterFrom').value, to=document.getElementById('filterTo').value;
     const binSize=0.01, minB=-0.3, maxB=0.3;
-    const bins=[]; for(let b=minB;b<maxB;b=+(b+binSize).toFixed(3)) bins.push(b);
+    const bins=[]; for(let b=minB;b<=maxB;b=+(b+binSize).toFixed(3)) bins.push(b);
     const datasets = active.map(site => {
       const sr = allRows.filter(r => {
         const d=(r.flight_time||'').slice(0,10);
@@ -389,10 +390,27 @@
       const c=SC[site];
       return {label:site,data:counts,borderColor:c.border,backgroundColor:c.bg,borderWidth:2,pointRadius:0,fill:true,tension:0.4};
     });
+
+    // Find label indices closest to -0.120 and +0.120
+    const negIdx = bins.findIndex(b => Math.abs(b - (-0.120)) < binSize/2);
+    const posIdx = bins.findIndex(b => Math.abs(b - 0.120) < binSize/2);
+    const negLabel = bins[negIdx]?.toFixed(2) ?? '-0.12';
+    const posLabel = bins[posIdx]?.toFixed(2) ?? '0.12';
+
     mkChart('histChart','line',{labels:bins.map(b=>b.toFixed(2)),datasets},{
-      plugins:{legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:11,family:'DM Mono'}}},
-        tooltip:{callbacks:{title:c=>`dZ: ${c[0].label}m`,label:c=>`${c.dataset.label}: ${c.raw} flights`}}},
-      scales:{x:{title:{display:true,text:'dZ (m)',color:'#8a7060'},ticks:{maxTicksLimit:12}},y:{title:{display:true,text:'Count',color:'#8a7060'},beginAtZero:true}}
+      plugins:{
+        legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:11,family:'DM Mono'}}},
+        tooltip:{callbacks:{title:c=>`dZ: ${c[0].label}m`,label:c=>`${c.dataset.label}: ${c.raw} flights`}},
+        annotation:{
+          annotations:{
+            negLine:{type:'line',xMin:negLabel,xMax:negLabel,borderColor:'rgba(220,38,38,0.7)',borderWidth:2,borderDash:[6,3],
+              label:{content:'-0.120m',display:true,position:'start',color:'#dc2626',font:{size:10,family:'DM Mono'},backgroundColor:'rgba(255,255,255,0.8)'}},
+            posLine:{type:'line',xMin:posLabel,xMax:posLabel,borderColor:'rgba(220,38,38,0.7)',borderWidth:2,borderDash:[6,3],
+              label:{content:'+0.120m',display:true,position:'start',color:'#dc2626',font:{size:10,family:'DM Mono'},backgroundColor:'rgba(255,255,255,0.8)'}}
+          }
+        }
+      },
+      scales:{x:{title:{display:true,text:'dZ (m)',color:'#8a7060'},ticks:{maxTicksLimit:20}},y:{title:{display:true,text:'Count',color:'#8a7060'},beginAtZero:true}}
     });
   }
 
