@@ -164,20 +164,14 @@
     <div class="stat-card red"><div class="stat-label">|dZ| > 0.1m</div><div class="stat-value red" id="statFails">—</div></div>
   </div>
 
-  <div class="charts-grid">
-    <div class="chart-card">
+  <div class="chart-card" style="margin-bottom:16px">
       <div class="chart-title"><div class="dot"></div>dZ Distribution — vertical accuracy by site</div>
       <canvas id="histChart"></canvas>
     </div>
-    <div class="chart-card">
-      <div class="chart-title"><div class="dot orange"></div>Flights by Site</div>
-      <canvas id="siteChart"></canvas>
-    </div>
-  </div>
   <div class="charts-bottom">
     <div class="chart-card"><div class="chart-title"><div class="dot"></div>dZ over Time</div><canvas id="timeChart"></canvas></div>
     <div class="chart-card"><div class="chart-title"><div class="dot orange"></div>dX / dY Scatter</div><canvas id="xyChart"></canvas></div>
-    <div class="chart-card"><div class="chart-title"><div class="dot green"></div>Points per Flight</div><canvas id="ptsChart"></canvas></div>
+    <div class="chart-card"><div class="chart-title"><div class="dot orange"></div>Flights by Site</div><canvas id="siteChart"></canvas></div>
   </div>
 
   <div class="table-card">
@@ -360,7 +354,6 @@
     renderSiteChart(rows);
     renderTimeChart(rows);
     renderXYChart(rows);
-    renderPtsChart(rows);
     renderTable(rows);
   }
 
@@ -429,14 +422,6 @@
       plugins:{legend:{display:true,position:'top',labels:{color:'#1a1a1a',font:{size:10,family:'DM Mono'}}}},
       scales:{x:{title:{display:true,text:'dX (m)',color:'#8a7060'}},y:{title:{display:true,text:'dY (m)',color:'#8a7060'}}}
     });
-  }
-
-  function renderPtsChart(rows) {
-    const sorted=[...rows].filter(r=>r.flight_time).sort((a,b)=>a.flight_time.localeCompare(b.flight_time));
-    mkChart('ptsChart','bar',{
-      labels:sorted.map(r=>r.flight_time.slice(0,10)),
-      datasets:[{data:sorted.map(r=>+r.pts),backgroundColor:sorted.map(r=>(SC[r.site]?.border||'#e8590c')+'bb'),borderWidth:0,borderRadius:2}]
-    },{plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:6}},y:{title:{display:true,text:'Points',color:'#8a7060'}}}});
   }
 
   function renderTable(rows) {
